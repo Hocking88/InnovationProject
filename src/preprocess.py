@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 RAW_PATH = "data/raw/malware_dataset.csv"
+OUT_DIR = "data/processed"
 
 if not os.path.exists(RAW_PATH):
     print(f"Missing input file: {RAW_PATH}")
