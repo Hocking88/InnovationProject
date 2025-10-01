@@ -9,7 +9,7 @@ from sklearn.metrics import (
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("data/EDA/malware_dataset.csv")
+df = pd.read_csv("data/EDA/Cleaned_combined_malware_dataset.csv")
 
 X = df.drop(columns=["classification", "millisecond"])
 y = df["classification"]
