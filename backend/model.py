@@ -1,40 +1,42 @@
-import numpy as np
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, r2_score
 import joblib
+import numpy as np
+import pandas as pd
+from typing import List, Dict
 
-# A simple regression model
-class SimpleModel:
-    def __init__(self):
-        # Initialize the model (Linear Regression)
-        self.model = LinearRegression()
+class MalwareModel:
+    def __init__(self, model_path: str = "artifacts/model_pipeline.joblib"):
+        self.model = joblib.load(model_path)
+        if hasattr(self.model, "feature_names_in_"):
+            self.feature_order = list(self.model.feature_names_in_)
+        else:
+            raise RuntimeError("Model must be fit on a pandas DataFrame so feature_names_in_ exists.")
 
-    def train(self):
-        # Example training data: X = [[square footage, bedrooms]], y = [price]
-        X = np.array([[1500, 3], [1200, 2], [1800, 4], [2000, 5], [1400, 2], [1600, 3]])
-        y = np.array([300000, 250000, 400000, 500000, 270000, 320000])
-        
-        # Train the model
-        self.model.fit(X, y)
-        
-        # Save the model
-        joblib.dump(self.model, 'simple_model.pkl')
+    def features(self) -> List[str]:
+        return self.feature_order
 
-        # Evaluation
-        predictions = self.model.predict(X)
-        mse = mean_squared_error(y, predictions)
-        r2 = r2_score(y, predictions)
+    def _coerce_rows(self, rows: List[Dict]) -> pd.DataFrame:
+        df = pd.DataFrame(rows)
+        for f in self.feature_order:
+            if f not in df.columns:
+                df[f] = 0
+        df = df[self.feature_order]
+        df = df.replace([np.inf, -np.inf], 0).fillna(0)
+        return df
 
-        print(f"Model trained. MSE: {mse}, R²: {r2}")
+    def predict_one(self, features: Dict) -> Dict:
+        X = self._coerce_rows([features])
+        y = self.model.predict(X)
+        if hasattr(self.model, "predict_proba"):
+            p = self.model.predict_proba(X)[:, 1]
+        else:
+            p = np.zeros(len(y))
+        return {"label": int(y[0]), "probability": float(p[0])}
 
-    def predict(self, square_footage, bedrooms):
-        # Load the model
-        model = joblib.load('simple_model.pkl')
-        
-        # Make a prediction based on input
-        return model.predict([[square_footage, bedrooms]])
-
-# Example usage (for initial training)
-if __name__ == "__main__":
-    model = SimpleModel()
-    model.train()
+    def predict_batch(self, rows: List[Dict]) -> Dict:
+        X = self._coerce_rows(rows)
+        y = self.model.predict(X).astype(int).tolist()
+        if hasattr(self.model, "predict_proba"):
+            p = self.model.predict_proba(X)[:, 1].tolist()
+        else:
+            p = [0.0] * len(y)
+        return {"labels": y, "probabilities": [float(v) for v in p]}
