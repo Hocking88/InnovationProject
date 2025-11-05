@@ -51,11 +51,11 @@ export default function ResultDetail() {
       <Paper sx={{ p: 4, backgroundColor: 'background.paper' }}>
         <Box sx={{ textAlign: 'center' }}>
           <Typography variant="h5" sx={{ color: statusColor, fontWeight: 'bold' }}>
-            {result.status} {result.status === 'SAFE' ? '✅' : 'MALICIOUS ❌'}
+            {result.status === 'SAFE' ? 'SAFE ✅' : 'MALICIOUS ❌'}
           </Typography>
           
           <Box sx={{ my: 3 }}>
-            <ResultsChart value={result.score} />
+            <ResultsChart value={result.score} status={result.status} />
           </Box>
           
           <Typography variant="body1" sx={{ mb: 3 }}>
