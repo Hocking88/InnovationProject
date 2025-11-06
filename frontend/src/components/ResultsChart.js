@@ -3,10 +3,12 @@ import * as d3 from 'd3';
 
 /**
  * A D3 donut chart component to display a confidence score.
- * @param {object} props - Component props.
- * @param {number} props.value - The confidence score (0-100).
+  * @param {object} props - Component props.
+  * @param {number} props.value - The confidence score (0-100).
+  * @param {string} props.status - The scan status ('SAFE' or 'MALICIOUS').
  */
-export default function ResultsChart({ value }) {
+// 1. Accept 'status' as a prop
+export default function ResultsChart({ value, status }) {
   const chartRef = useRef();
 
   useEffect(() => {
@@ -24,10 +26,14 @@ export default function ResultsChart({ value }) {
     const radius = Math.min(width, height) / 2;
     const innerRadius = radius * 0.7; // This creates the donut hole
 
-    // Use a green color for "safe" and a grey for the remainder
+    // 2. CHOOSE THE COLOR
+    // Use green (#2e7d32) for SAFE, and red (#d32f2f) for MALICIOUS
+    const activeColor = status === 'SAFE' ? '#2e7d32' : '#d32f2f';
+
+    // 3. USE THE 'activeColor' IN THE RANGE
     const color = d3.scaleOrdinal()
       .domain(['Confidence', 'Remaining'])
-      .range(['#2e7d32', '#e0e0e0']); // Using MUI green.dark and grey
+      .range([activeColor, '#e0e0e0']); // Using activeColor and grey
 
     const pie = d3.pie()
       .value(d => d.value)
@@ -62,7 +68,7 @@ export default function ResultsChart({ value }) {
       .style('font-weight', 'bold')
       .attr('fill', 'currentColor') // Use theme text color
       .text(`${score}%`);
-      
+    
     // Add the "Confidence" sub-text
     svg.append('text')
       .attr('text-anchor', 'middle')
@@ -71,7 +77,8 @@ export default function ResultsChart({ value }) {
       .attr('fill', 'currentColor') // Use theme text color
       .text('Confidence');
 
-  }, [value]); // Rerun effect if the value changes
+  // 4. Add 'status' to the dependency array
+  }, [value, status]); // Rerun effect if value or status changes
 
   return <div ref={chartRef} style={{ display: 'inline-block' }}></div>;
 }
