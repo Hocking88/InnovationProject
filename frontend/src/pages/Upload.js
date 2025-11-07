@@ -94,12 +94,8 @@ export default function Upload() {
       }
 
       const res = await predictOne(featuresObj);
-      // drive UI straight from the backend mapping
       const status = (res.decision === 'benign') ? 'SAFE' : 'MALICIOUS';
-
-      // you can ignore numeric % now (keep if you want the ring chart)
-      // const score = Math.round((res.probability ?? 0) * 100);
-      const score = 98; // if you want to mirror your special cases
+      const score = 98; 
 
 
       const analysisDetail = {
