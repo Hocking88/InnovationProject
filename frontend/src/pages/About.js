@@ -35,7 +35,7 @@ export default function About() {
       <Typography variant="h4" gutterBottom>🛠️ About Us</Typography>
       <Box 
         sx={{ 
-          mt: 3A, 
+          mt: 3, 
           display: 'flex',
           flexWrap: 'wrap',
           justifyContent: 'center',
