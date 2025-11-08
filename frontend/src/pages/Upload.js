@@ -1,13 +1,67 @@
+// ===== Imports =====
 import React, { useState, useRef, useEffect } from 'react';
 import { Container, Typography, Box, Button, TextField, Paper, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import { getFeatures, predictOne } from '../lib/api';
 
+
+// ===== Pure, testable helpers (put these before your component) =====
+export function parseTextToFeatures(text, features) {
+  const base = {};
+  features.forEach(f => (base[f] = 0));
+  if (!text || !text.trim()) return base;
+  try {
+    const obj = JSON.parse(text);
+    features.forEach(f => (base[f] = Number(obj[f] ?? base[f])));
+    return base;
+  } catch (_) {}
+  const lines = text.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  lines.forEach(line => {
+    const m = line.split('=');
+    if (m.length >= 2) {
+      const k = m[0].trim();
+      const v = Number(m.slice(1).join('=').trim());
+      if (features.includes(k) && !Number.isNaN(v)) base[k] = v;
+    }
+  });
+  return base;
+}
+
+export function parseCsvFirstRow(csvText, features) {
+  const base = {};
+  features.forEach(f => (base[f] = 0));
+  const lines = csvText.split(/\r?\n/).filter(Boolean);
+  if (lines.length < 2) return base;
+  const header = lines[0].split(',').map(s => s.trim());
+  const row = lines[1].split(',').map(s => s.trim());
+  header.forEach((h, idx) => {
+    if (features.includes(h)) {
+      const v = Number(row[idx]);
+      if (!Number.isNaN(v)) base[h] = v;
+    }
+  });
+  return base;
+}
+
+export function statusFromLabel(label) {
+  return label === 1 ? 'SAFE' : 'MALICIOUS';
+}
+
+export function shouldEnableExport(status) {
+  return status === 'MALICIOUS';
+}
+
+export function needsScoreRerender(prevScore, nextScore) {
+  return Number(prevScore) !== Number(nextScore);
+}
+
+
+// ===== Main component (unchanged) =====
 export default function Upload() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [textValue, setTextValue] = useState("");
+  const [textValue, setTextValue] = useState('');
   const [featureList, setFeatureList] = useState([]);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
@@ -16,15 +70,13 @@ export default function Upload() {
     getFeatures().then(setFeatureList).catch(() => setFeatureList([]));
   }, []);
 
-  const handleFileSelectClick = () => {
-    fileInputRef.current.click();
-  };
+  const handleFileSelectClick = () => fileInputRef.current.click();
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
       setSelectedFile(file);
-      setTextValue("");
+      setTextValue('');
     }
   };
 
@@ -40,43 +92,6 @@ export default function Upload() {
       fr.onerror = reject;
       fr.readAsText(file);
     });
-
-  const parseTextToFeatures = (text, features) => {
-    const base = {};
-    features.forEach(f => (base[f] = 0));
-    if (!text || !text.trim()) return base;
-    try {
-      const obj = JSON.parse(text);
-      features.forEach(f => (base[f] = Number(obj[f] ?? base[f])));
-      return base;
-    } catch (_) {}
-    const lines = text.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-    lines.forEach(line => {
-      const m = line.split("=");
-      if (m.length >= 2) {
-        const k = m[0].trim();
-        const v = Number(m.slice(1).join("=").trim());
-        if (features.includes(k) && !Number.isNaN(v)) base[k] = v;
-      }
-    });
-    return base;
-  };
-
-  const parseCsvFirstRow = (csvText, features) => {
-    const base = {};
-    features.forEach(f => (base[f] = 0));
-    const lines = csvText.split(/\r?\n/).filter(Boolean);
-    if (lines.length < 2) return base;
-    const header = lines[0].split(",").map(s => s.trim());
-    const row = lines[1].split(",").map(s => s.trim());
-    header.forEach((h, idx) => {
-      if (features.includes(h)) {
-        const v = Number(row[idx]);
-        if (!Number.isNaN(v)) base[h] = v;
-      }
-    });
-    return base;
-  };
 
   const handleAnalyze = async () => {
     setIsLoading(true);
