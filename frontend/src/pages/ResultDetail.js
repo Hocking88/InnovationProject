@@ -1,3 +1,7 @@
+// ResultDetail.js
+// This page displays detailed information for a single scan result.
+// It retrieves the result data from localStorage based on the resultId from the URL.
+
 import React, { useState, useEffect } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import { 
@@ -9,20 +13,32 @@ import {
   Button,
   CircularProgress
 } from '@mui/material';
-// Import a more relevant icon
 import UploadFileIcon from '@mui/icons-material/UploadFile'; 
 import ResultsChart from '../components/ResultsChart';
 
 export default function ResultDetail() {
+  // --- GET PARAMETER FROM URL ---
+  // Extract the "resultId" from the URL (e.g., /result/:resultId)
   const { resultId } = useParams(); 
+
+  // --- STATE MANAGEMENT ---
+  // 'result' stores the individual scan result found in localStorage
   const [result, setResult] = useState(null);
 
+  // --- LOAD INDIVIDUAL RESULT ON COMPONENT MOUNT ---
   useEffect(() => {
+    // Retrieve stored scan history from localStorage
     const storedHistory = JSON.parse(localStorage.getItem('malwareScanHistory')) || [];
+    
+    // Find the result that matches the current resultId
     const foundResult = storedHistory.find(item => item.id === resultId);
+    
+    // Store the found result in state
     setResult(foundResult);
   }, [resultId]);
 
+  // --- LOADING STATE ---
+  // Display a loading spinner while the result is being retrieved
   if (!result) {
     return (
       <Container sx={{ mt: 8, mb: 8, textAlign: 'center' }}>
@@ -32,32 +48,40 @@ export default function ResultDetail() {
     );
   }
 
+  // --- SET COLOR BASED ON SCAN STATUS ---
   const statusColor = result.status === 'SAFE' ? 'green' : 'red';
+
   return (
     <Container sx={{ mt: 8, mb: 2 }}>
       
-      {/* --- THIS BUTTON IS NOW UPDATED --- */}
+      {/* --- NAVIGATION BUTTON --- */}
+      {/* Provides a link back to the upload page to allow another scan */}
       <Button 
         component={RouterLink} 
-        to="/upload" // 1. Points to /upload
-        startIcon={<UploadFileIcon />} // 2. Uses a new icon
+        to="/upload"
+        startIcon={<UploadFileIcon />} 
         sx={{ mb: 2 }}
-        variant="outlined" // 3. Make it stand out a little
+        variant="outlined"
       >
         Scan Another File
       </Button>
-      {/* --- END OF UPDATE --- */}
 
+      {/* --- RESULT DETAIL CARD --- */}
       <Paper sx={{ p: 4, backgroundColor: 'background.paper' }}>
+        
+        {/* --- RESULT STATUS AND SCORE --- */}
         <Box sx={{ textAlign: 'center' }}>
+          {/* Display scan status: SAFE or MALICIOUS */}
           <Typography variant="h5" sx={{ color: statusColor, fontWeight: 'bold' }}>
             {result.status === 'SAFE' ? 'SAFE ✅' : 'MALICIOUS ❌'}
           </Typography>
           
+          {/* Visual representation of scan confidence score */}
           <Box sx={{ my: 3 }}>
             <ResultsChart value={result.score} status={result.status} />
           </Box>
           
+          {/* Short summary text describing the result */}
           <Typography variant="body1" sx={{ mb: 3 }}>
             Our analysis indicates this content is 
             {result.status === 'SAFE' ? ' safe and free from malware.' : ' potentially malicious.'}
@@ -66,6 +90,8 @@ export default function ResultDetail() {
 
         <Divider sx={{ mb: 3 }} />
 
+        {/* --- RESULT DETAILS SECTION --- */}
+        {/* Displays metadata such as file type, name, and scan time */}
         <Box sx={{ textAlign: 'left', color: 'text.secondary' }}>
           <Typography variant="body2" component="div">
             <strong>Item Analyzed:</strong> {result.type}
