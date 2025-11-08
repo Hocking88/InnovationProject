@@ -14,3 +14,5 @@ Custom_Malware_Train.ipynb - Training the custom cleaned dataset with the machin
 
 # Run
 Each script is .ipynb format and can be run easy in Visual Studio Code by clicking Run All which cleans the database and then trains and tests it with the relevant scripts
+
+uvicorn main:app --reload --port 8000

@@ -40,12 +40,3 @@ def predict(payload: PredictIn):
         return model.predict_one(payload.features)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
-@app.post("/predict/batch")
-def predict_batch(payload: PredictBatchIn):
-    if not payload.rows:
-        raise HTTPException(status_code=400, detail="rows must be non-empty")
-    try:
-        return model.predict_batch(payload.rows)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))

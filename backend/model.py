@@ -59,7 +59,6 @@ class MalwareModel:
         return {
             "label": int(label),
             "decision": decision,
-            "probability": p1  
         }
 
     def predict_batch(self, rows: List[Dict]) -> Dict:
