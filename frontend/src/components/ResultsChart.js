@@ -1,3 +1,4 @@
+//ResultsChart.js
 import React, { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 
@@ -60,7 +61,7 @@ export default function ResultsChart({ value, status }) {
       .attr('d', arc)
       .attr('fill', d => color(d.data.name));
 
-    // Add the "97%" text in the middle
+    // Add the "%" text in the middle
     svg.append('text')
       .attr('text-anchor', 'middle')
       .attr('dy', '.35em')

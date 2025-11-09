@@ -1,14 +1,31 @@
+//HowItWorks Page
+// Import necessary components from React and Material--UI (MUI)
 import React from 'react';
-import { Container, Typography, Box, Paper } from '@mui/material';
+import { 
+  Container,    // Centers content horizontally and adds padding
+  Typography,   // For rendering text with predefined styles
+  Box,          // A generic container component, often used for layout
+  Paper         // A component that renders with a Material-UI paper/elevation style (like a card)
+} from '@mui/material';
 
+// Define the HowItWorks component
 export default function HowItWorks() {
   return (
+    // Container component sets max-width and centers content.
+    // sx prop adds custom styling: mt = margin-top, mb = margin-bottom (8 units = 64px by default)
     <Container sx={{ mt: 8, mb: 8 }}>
+      {/* Title for the page */}
       <Typography variant="h4" gutterBottom>⚙️ How It Works</Typography>
       
-      <Paper sx={{ p: 4, mt: 4, backgroundColor: 'background.paper' }}>
+      {/* Paper component wraps the main content, giving it a distinct background and shadow */}
+      <Paper sx={{ 
+        p: 4, // Padding (4 units = 32px) on all sides
+        mt: 4, // Margin-top
+        backgroundColor: 'background.paper' // Use the theme's paper color
+      }}>
         
-        <Box sx={{ mb: 3 }}>
+        {/* Step 1: Box component to group the heading and body text */}
+        <Box sx={{ mb: 3 }}> {/* mb = margin-bottom (3 units = 24px) */}
           <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
             Step 1 – Upload or Paste Your Content
           </Typography>
@@ -17,6 +34,7 @@ export default function HowItWorks() {
           </Typography>
         </Box>
         
+        {/* Step 2: Box component */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
             Step 2 – Smart Feature Extraction
@@ -26,6 +44,7 @@ export default function HowItWorks() {
           </Typography>
         </Box>
         
+        {/* Step 3: Box component */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
             Step 3 – AI Classification
@@ -35,6 +54,7 @@ export default function HowItWorks() {
           </Typography>
         </Box>
         
+        {/* Step 4: Box component (no margin-bottom as it's the last step) */}
         <Box>
           <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
             Step 4 – Results in Seconds
@@ -44,7 +64,8 @@ export default function HowItWorks() {
           </Typography>
         </Box>
         
-        <Typography variant="body1" sx={{ mt: 4 }}>
+        {/* Concluding summary text */}
+        <Typography variant="body1" sx={{ mt: 4 }}> {/* mt = margin-top */}
           👉 We designed this process to be fast, simple, and transparent—so you can quickly check suspicious content without needing technical expertise.
         </Typography>
 
