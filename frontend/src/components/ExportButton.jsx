@@ -1,11 +1,13 @@
+//ExportButton.jsx
 import React, { useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 export default function ExportButton({
   wrapperId = "malware-report-area",
-  status,        // "SAFE" | "MALICIOUS" (button disabled unless MALICIOUS)
+  status,        // "SAFE" | "MALICIOUS"
   filenameBase = "malware_charts",
+  alwaysEnable = false, // NEW PROP: force enable regardless of status
 }) {
   const [busy, setBusy] = useState(false);
 
@@ -40,7 +42,6 @@ export default function ExportButton({
       const pageH = pdf.internal.pageSize.getHeight();
       const margin = 20;
 
-      // Fit image onto a single A4 page
       const img = new Image();
       img.src = imgData;
       await new Promise((r) => (img.onload = r));
@@ -57,7 +58,8 @@ export default function ExportButton({
     }
   };
 
-  const disabled = busy || status !== "MALICIOUS";
+  // ENABLE BUTTON IF MALICIOUS OR alwaysEnable IS TRUE
+  const disabled = busy || (!alwaysEnable && status !== "MALICIOUS");
 
   return (
     <div style={{ display: "flex", gap: 8 }}>
@@ -70,3 +72,4 @@ export default function ExportButton({
     </div>
   );
 }
+
