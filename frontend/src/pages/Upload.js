@@ -13,23 +13,28 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import { useNavigate } from 'react-router-dom';
 import { getFeatures, predictOne } from '../lib/api';
 
-
-// ===== Pure, testable helpers (put these before your component) =====
+// ===== Pure, testable helpers =====
 export function parseTextToFeatures(text, features) {
   const base = {};
   features.forEach(f => (base[f] = 0));
   if (!text || !text.trim()) return base;
+
   try {
     const obj = JSON.parse(text);
-    features.forEach(f => (base[f] = Number(obj[f] ?? base[f])));
+    features.forEach(f => {
+      const v = obj[f];
+      base[f] = (v === undefined || v === null || v === '') ? 0 : Number(v);
+    });
     return base;
   } catch (_) {}
+
+  // Fallback to key=value parsing
   const lines = text.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
   lines.forEach(line => {
-    const m = line.split('=');
-    if (m.length >= 2) {
-      const k = m[0].trim();
-      const v = Number(m.slice(1).join('=').trim());
+    const i = line.indexOf('=');
+    if (i > 0) {
+      const k = line.slice(0, i).trim();
+      const v = Number(line.slice(i + 1).trim());
       if (features.includes(k) && !Number.isNaN(v)) base[k] = v;
     }
   });
@@ -37,19 +42,16 @@ export function parseTextToFeatures(text, features) {
 }
 
 export function parseCsvFirstRow(csvText, features) {
-  const base = {};
-  features.forEach(f => (base[f] = 0));
+  const out = {};
   const lines = csvText.split(/\r?\n/).filter(Boolean);
-  if (lines.length < 2) return base;
+  if (lines.length < 2) return out;
+
   const header = lines[0].split(',').map(s => s.trim());
   const row = lines[1].split(',').map(s => s.trim());
   header.forEach((h, idx) => {
-    if (features.includes(h)) {
-      const v = Number(row[idx]);
-      if (!Number.isNaN(v)) base[h] = v;
-    }
+    if (features.includes(h)) out[h] = Number(row[idx]) || 0;
   });
-  return base;
+  return out;
 }
 
 export function statusFromLabel(label) {
@@ -64,8 +66,7 @@ export function needsScoreRerender(prevScore, nextScore) {
   return Number(prevScore) !== Number(nextScore);
 }
 
-
-// ===== Main component (unchanged) =====
+// ===== Main component =====
 export default function Upload() {
   // --- STATE VARIABLES ---
   const [isLoading, setIsLoading] = useState(false);
@@ -80,24 +81,9 @@ export default function Upload() {
   // --- FETCH MODEL FEATURES ON LOAD ---
   useEffect(() => {
     getFeatures()
-      .then(setFeatureList)
-      .catch(() => setFeatureList([])); // Fallback to empty list if backend unavailable
-  }, []);
-
-  const handleFileSelectClick = () => fileInputRef.current.click();
-  // --- HANDLE FILE SELECTION ---
-  const handleFileSelectClick = () => {
-    fileInputRef.current.click(); // Programmatically open file input
-  };
-
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      setTextValue('');
-      setTextValue(''); // Clear text input if file selected
-      .then((f) => {
-        setFeatureList(Array.isArray(f) ? f : []);
+      .then(f => {
+        const features = Array.isArray(f) ? f : [];
+        setFeatureList(features);
         const init = {};
         features.forEach(name => { init[name] = ''; });
         setManualValues(init);
@@ -317,4 +303,3 @@ export default function Upload() {
     </Container>
   );
 }
-
