@@ -18,6 +18,59 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import { useNavigate } from 'react-router-dom';
 import { getFeatures, predictOne } from '../lib/api';
 
+
+// ===== Pure, testable helpers (put these before your component) =====
+export function parseTextToFeatures(text, features) {
+  const base = {};
+  features.forEach(f => (base[f] = 0));
+  if (!text || !text.trim()) return base;
+  try {
+    const obj = JSON.parse(text);
+    features.forEach(f => (base[f] = Number(obj[f] ?? base[f])));
+    return base;
+  } catch (_) {}
+  const lines = text.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  lines.forEach(line => {
+    const m = line.split('=');
+    if (m.length >= 2) {
+      const k = m[0].trim();
+      const v = Number(m.slice(1).join('=').trim());
+      if (features.includes(k) && !Number.isNaN(v)) base[k] = v;
+    }
+  });
+  return base;
+}
+
+export function parseCsvFirstRow(csvText, features) {
+  const base = {};
+  features.forEach(f => (base[f] = 0));
+  const lines = csvText.split(/\r?\n/).filter(Boolean);
+  if (lines.length < 2) return base;
+  const header = lines[0].split(',').map(s => s.trim());
+  const row = lines[1].split(',').map(s => s.trim());
+  header.forEach((h, idx) => {
+    if (features.includes(h)) {
+      const v = Number(row[idx]);
+      if (!Number.isNaN(v)) base[h] = v;
+    }
+  });
+  return base;
+}
+
+export function statusFromLabel(label) {
+  return label === 1 ? 'SAFE' : 'MALICIOUS';
+}
+
+export function shouldEnableExport(status) {
+  return status === 'MALICIOUS';
+}
+
+export function needsScoreRerender(prevScore, nextScore) {
+  return Number(prevScore) !== Number(nextScore);
+}
+
+
+// ===== Main component (unchanged) =====
 export default function Upload() {
   // --- STATE VARIABLES ---
   const [isLoading, setIsLoading] = useState(false);         // Controls loading spinner visibility
@@ -42,6 +95,7 @@ export default function Upload() {
       .catch(() => setFeatureList([])); // Fallback to empty list if backend unavailable
   }, []);
 
+  const handleFileSelectClick = () => fileInputRef.current.click();
   // --- HANDLE FILE SELECTION ---
   const handleFileSelectClick = () => {
     fileInputRef.current.click(); // Programmatically open file input
@@ -51,6 +105,7 @@ export default function Upload() {
     const file = event.target.files[0];
     if (file) {
       setSelectedFile(file);
+      setTextValue('');
       setTextValue(''); // Clear text input if file selected
       .then((f) => {
         setFeatureList(Array.isArray(f) ? f : []);
