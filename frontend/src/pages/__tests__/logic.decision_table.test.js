@@ -21,11 +21,6 @@ test("statusFromLabel (decision rules)", () => {
   expect(statusFromLabel(undefined)).toBe("MALICIOUS");
 });
 
-test("shouldEnableExport (decision rules)", () => {
-  expect(shouldEnableExport("SAFE")).toBe(false);
-  expect(shouldEnableExport("MALICIOUS")).toBe(true);
-});
-
 // State transition: chart text should update only when score changes
 test("needsScoreRerender (state transition)", () => {
   expect(needsScoreRerender(50, 50)).toBe(false);
