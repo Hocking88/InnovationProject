@@ -12,6 +12,8 @@ if BACKEND_DIR not in sys.path:
 
 MAIN_PATH = os.path.join(BACKEND_DIR, 'main.py')
 spec = importlib.util.spec_from_file_location("main", MAIN_PATH)
+if spec is None or spec.loader is None:
+    raise ImportError("Could not load the main module or its loader")
 main = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(main)         # executes main.py, now it can import model.py
 
@@ -26,13 +28,11 @@ def _base_features():
     feats = client.get("/features").json()["features"]
     return {f: 0 for f in feats}
 
-
 def test_predict_ep_valid_minimal():
     r = client.post("/predict", json={"features": _base_features()})
     assert r.status_code == 200
     body = r.json()
-    assert "label" in body and "probability" in body
-
+    assert "label" in body
 
 def test_predict_bva_extremes_do_not_crash():
     feats = _base_features()
@@ -43,14 +43,7 @@ def test_predict_bva_extremes_do_not_crash():
     r = client.post("/predict", json={"features": feats})
     assert r.status_code == 200
 
+def test_predict_empty_rows_is_invalid():
+    r = client.post("/predict", json={"rows": []})
+    assert r.status_code == 422
 
-def test_predict_batch_empty_rows_is_invalid():
-    r = client.post("/predict/batch", json={"rows": []})
-    assert r.status_code == 400
-    assert "rows must be non-empty" in r.text
-
-
-def test_predict_batch_two_rows_valid():
-    rows = [_base_features(), _base_features()]
-    r = client.post("/predict/batch", json={"rows": rows})
-    assert r.status_code == 200

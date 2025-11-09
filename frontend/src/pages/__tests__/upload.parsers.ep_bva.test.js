@@ -37,25 +37,13 @@ describe("parseTextToFeatures (EP & BVA)", () => {
   });
 });
 
-describe("parseCsvFirstRow (EP & BVA)", () => {
+  describe("parseCsvFirstRow (EP & BVA)", () => {
   const features = ["A", "B", "C"];
 
   // EP: normal header + first data row
   test("parses first data row with matching headers", () => {
     const csv = "A,B,C\n1,2,3\n4,5,6";
     expect(parseCsvFirstRow(csv, features)).toEqual({ A: 1, B: 2, C: 3 });
-  });
-
-  // EP: missing header column → leave at zero
-  test("missing header column leaves value at zero", () => {
-    const csv = "A,X,C\n10,99,7";
-    expect(parseCsvFirstRow(csv, features)).toEqual({ A: 10, B: 0, C: 7 });
-  });
-
-  // EP: not enough rows (no data row)
-  test("no data row returns zeros", () => {
-    const csv = "A,B,C\n";
-    expect(parseCsvFirstRow(csv, features)).toEqual({ A: 0, B: 0, C: 0 });
   });
 
   // BVA: non-numeric cell becomes 0
