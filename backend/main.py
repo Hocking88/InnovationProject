@@ -8,7 +8,7 @@ app = FastAPI(title="Malware Analysis API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000","http://localhost:5173"],
+    allow_origins=["http://localhost:3000", "http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -28,7 +28,7 @@ def root():
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return {"status": "ok", "model_loaded": True, "n_features": len(model.features())}
 
 @app.get("/features")
 def features():
@@ -38,14 +38,5 @@ def features():
 def predict(payload: PredictIn):
     try:
         return model.predict_one(payload.features)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-@app.post("/predict/batch")
-def predict_batch(payload: PredictBatchIn):
-    if not payload.rows:
-        raise HTTPException(status_code=400, detail="rows must be non-empty")
-    try:
-        return model.predict_batch(payload.rows)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
