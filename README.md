@@ -23,6 +23,9 @@ uvicorn main:app --reload --port 8000
 # Frontend
 cd frontend
 npm install
+npm install react-plotly.js plotly.js react-chartjs-2 chart.js chartjs-plugin-zoom d3
+npm install chart.js react-chartjs-2 chartjs-adapter-date-fns date-fns chartjs-plugin-zoom hammerjs
+npm install --save html2canvas jspdf
 npm start
 
 # Tests
